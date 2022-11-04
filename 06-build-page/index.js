@@ -25,6 +25,7 @@ const analogFolder = async (folderName) => {
 const takeTemplate = async () => {
   let readData = '';
   let data = '';
+  // let resultBebra = '';
 
   let readStream = fs.createReadStream(path.resolve(__dirname, 'template.html'), 'utf-8');
   readStream.on('data', (readChunk) => {
@@ -34,23 +35,36 @@ const takeTemplate = async () => {
     fs.readdir(path.resolve(__dirname, 'components'), (err, files) => {
       files.forEach(async (file) => {
         if (file.slice(-5) === '.html') {
+          console.log('File: ' + file);
           let readStream = fs.createReadStream(path.resolve(__dirname, 'components', file), 'utf-8');
+          // data = '';
           readStream.on('data', (chunk) => {
-            data += chunk;
-          }).on('end', () => {
-            result = result.replace(file.slice(0, -5), data);
+            if (!data) {
+              data += chunk;
+            } else {
+              data = '';
+              data += chunk;
+            }
+            console.log(file);
+            console.log(`{{${file.slice(0, -5)}}}`);
+            result = result.replace(`{{${file.slice(0, -5)}}}`, data);
             fs.writeFile(path.resolve(__dirname, 'project-dist', 'index.html'), result, (err) => {
               if (err) {
                 console.log(err);
               }
             });
+            console.log('data: ' + data);
+          }).on('end', () => {
+
+            // resultBebra = result;
           });
         }
+
       });
     });
   });
 
-  
+
 };
 
 const bundleCss = () => {
@@ -85,3 +99,4 @@ analogFolder('svg');
 takeTemplate();
 
 bundleCss();
+
